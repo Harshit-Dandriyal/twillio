@@ -6,22 +6,24 @@ const serviceSid = "VAf450fd33bb7c6e80fed9d6b6ec4dabff";
 const client = twilio(accountSid, authToken);
 
 exports.handler = async function (event, context) {
-  const { action, phoneNumber, otp } = JSON.parse(event.body);
-
   // Define CORS headers
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   };
 
-  try {
-    if (event.httpMethod === "OPTIONS") {
-      return {
-        statusCode: 204,
-        headers,
-      };
-    }
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204,
+      headers,
+      body: "",
+    };
+  }
 
+  const { action, phoneNumber, otp } = JSON.parse(event.body);
+
+  try {
     if (action === "send") {
       const response = await client.verify
         .services(serviceSid)
