@@ -1,11 +1,26 @@
 const twilio = require("twilio");
+const cors = require("cors");
 
-const accountSid = "ACfebf0f7b0088475a516e0932dff31acd";
-const authToken = "013dd3df510b9008ae8dcab5cdc90dd8";
-const serviceSid = "VAf450fd33bb7c6e80fed9d6b6ec4dabff";
+const accountSid = "your-twilio-account-sid";
+const authToken = "your-twilio-auth-token";
+const serviceSid = "your-twilio-verify-service-sid";
 const client = twilio(accountSid, authToken);
 
-exports.handler = async function (event, context) {
+// Initialize cors middleware
+const corsHandler = cors({ origin: "*" });
+
+exports.handler = async function (event, context, callback) {
+  // Apply CORS headers
+  await new Promise((resolve, reject) => {
+    corsHandler(event, context, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+
   const { action, phoneNumber, otp } = JSON.parse(event.body);
 
   try {
