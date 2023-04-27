@@ -1,29 +1,27 @@
 const twilio = require("twilio");
-const cors = require("cors");
 
-const accountSid = "your-twilio-account-sid";
-const authToken = "your-twilio-auth-token";
-const serviceSid = "your-twilio-verify-service-sid";
+const accountSid = "ACfebf0f7b0088475a516e0932dff31acd";
+const authToken = "013dd3df510b9008ae8dcab5cdc90dd8";
+const serviceSid = "VAf450fd33bb7c6e80fed9d6b6ec4dabff";
 const client = twilio(accountSid, authToken);
 
-// Initialize cors middleware
-const corsHandler = cors({ origin: "*" });
-
-exports.handler = async function (event, context, callback) {
-  // Apply CORS headers
-  await new Promise((resolve, reject) => {
-    corsHandler(event, context, (error) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-
+exports.handler = async function (event, context) {
   const { action, phoneNumber, otp } = JSON.parse(event.body);
 
+  // Define CORS headers
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+
   try {
+    if (event.httpMethod === "OPTIONS") {
+      return {
+        statusCode: 204,
+        headers,
+      };
+    }
+
     if (action === "send") {
       const response = await client.verify
         .services(serviceSid)
@@ -33,6 +31,7 @@ exports.handler = async function (event, context, callback) {
         });
       return {
         statusCode: 200,
+        headers,
         body: JSON.stringify({ success: true, sid: response.sid }),
       };
     } else if (action === "verify") {
@@ -44,17 +43,20 @@ exports.handler = async function (event, context, callback) {
         });
       return {
         statusCode: 200,
+        headers,
         body: JSON.stringify({ success: response.valid }),
       };
     } else {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ success: false, error: "Invalid action" }),
       };
     }
   } catch (error) {
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ success: false, error: error.message }),
     };
   }
